@@ -195,8 +195,7 @@ This project is open source and available under the MIT License.
 
 ## 👨‍💻 Author
 
-[Your Name] - Professional Python Developer
+Shayna Bahia - Professional Python Developer
 
 ---
 
-*Built with ❤️ using modern Python practices and Flask* 
