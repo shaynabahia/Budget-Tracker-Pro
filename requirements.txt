@@ -1,0 +1,26 @@
+# Professional Budget Tracker - Requirements
+
+# CLI Version (budget-tracker.py) - No external dependencies required!
+# Uses only Python standard library modules
+
+# Web Version (app.py) - Additional dependencies
+Flask==2.3.3
+
+# Core Python modules used:
+# - json: Data serialization
+# - os, sys: System operations
+# - datetime: Date and time handling
+# - typing: Type hints
+# - dataclasses: Data structures
+# - enum: Enumerations
+# - locale: Currency formatting
+# - pathlib: Path operations
+# - csv: CSV export functionality
+# - uuid: Unique ID generation
+
+# Python version requirement
+python_requires>=3.7
+
+# Note: The CLI version demonstrates modern Python development
+# without external dependencies, making it highly portable.
+# The web version adds Flask for a beautiful web interface. 

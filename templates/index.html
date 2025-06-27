@@ -1,0 +1,233 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Budget Tracker Pro{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<div class="row mb-4">
+    <div class="col-12">
+        <h1 class="display-4 fw-bold text-primary">
+            <i class="fas fa-chart-line me-3"></i>Financial Dashboard
+        </h1>
+        <p class="lead text-muted">Track your income, expenses, and financial goals</p>
+    </div>
+</div>
+
+<!-- Summary Cards -->
+<div class="row mb-4">
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="card income-card h-100">
+            <div class="card-body text-center">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-title mb-0">Total Income</h6>
+                        <h3 class="mb-0">{{ format_currency(total_income) }}</h3>
+                    </div>
+                    <i class="fas fa-arrow-up fa-2x opacity-75"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="card expense-card h-100">
+            <div class="card-body text-center">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-title mb-0">Total Expenses</h6>
+                        <h3 class="mb-0">{{ format_currency(total_expenses) }}</h3>
+                    </div>
+                    <i class="fas fa-arrow-down fa-2x opacity-75"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="card balance-card h-100">
+            <div class="card-body text-center">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-title mb-0">Net Balance</h6>
+                        <h3 class="mb-0">{{ format_currency(balance) }}</h3>
+                    </div>
+                    <i class="fas fa-wallet fa-2x opacity-75"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="card stats-card h-100">
+            <div class="card-body text-center">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-title mb-0">This Month</h6>
+                        <h3 class="mb-0">{{ format_currency(monthly_summary.balance) }}</h3>
+                    </div>
+                    <i class="fas fa-calendar-alt fa-2x opacity-75"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Charts Row -->
+<div class="row mb-4">
+    <div class="col-lg-8 mb-3">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-chart-pie me-2"></i>Expenses by Category</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="categoryChart" width="400" height="200"></canvas>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-4 mb-3">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-chart-bar me-2"></i>Monthly Overview</h5>
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-6">
+                        <h4 class="text-success">{{ format_currency(monthly_summary.income) }}</h4>
+                        <small class="text-muted">Income</small>
+                    </div>
+                    <div class="col-6">
+                        <h4 class="text-danger">{{ format_currency(monthly_summary.expenses) }}</h4>
+                        <small class="text-muted">Expenses</small>
+                    </div>
+                </div>
+                <hr>
+                <div class="text-center">
+                    <h5 class="text-primary">{{ format_currency(monthly_summary.balance) }}</h5>
+                    <small class="text-muted">Net Balance</small>
+                </div>
+                <hr>
+                <div class="text-center">
+                    <h6>{{ monthly_summary.transaction_count }}</h6>
+                    <small class="text-muted">Transactions</small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Transactions -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="fas fa-clock me-2"></i>Recent Transactions</h5>
+                <a href="{{ url_for('transactions') }}" class="btn btn-sm btn-primary">
+                    <i class="fas fa-list me-1"></i>View All
+                </a>
+            </div>
+            <div class="card-body">
+                {% if recent_transactions %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Name</th>
+                                    <th>Category</th>
+                                    <th>Type</th>
+                                    <th>Amount</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for transaction in recent_transactions %}
+                                <tr>
+                                    <td>{{ transaction.date.strftime('%Y-%m-%d') }}</td>
+                                    <td>
+                                        <strong>{{ transaction.name }}</strong>
+                                        {% if transaction.description %}
+                                            <br><small class="text-muted">{{ transaction.description }}</small>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-secondary">{{ transaction.category.value }}</span>
+                                    </td>
+                                    <td>
+                                        <span class="transaction-type-{{ transaction.transaction_type.value }}">
+                                            <i class="fas fa-{{ 'arrow-up' if transaction.transaction_type.value == 'income' else 'arrow-down' }} me-1"></i>
+                                            {{ transaction.transaction_type.value.title() }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <strong class="transaction-type-{{ transaction.transaction_type.value }}">
+                                            {{ format_currency(transaction.amount) }}
+                                        </strong>
+                                    </td>
+                                    <td>
+                                        <form method="POST" action="{{ url_for('delete_transaction', transaction_id=transaction.id) }}" 
+                                              style="display: inline;" 
+                                              onsubmit="return confirm('Are you sure you want to delete this transaction?')">
+                                            <button type="submit" class="btn btn-sm btn-outline-danger">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                        <h5 class="text-muted">No transactions yet</h5>
+                        <p class="text-muted">Start by adding your first transaction!</p>
+                        <a href="{{ url_for('add_transaction') }}" class="btn btn-primary">
+                            <i class="fas fa-plus me-1"></i>Add Transaction
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Category Chart
+const categoryCtx = document.getElementById('categoryChart').getContext('2d');
+const categoryData = {
+    labels: [{% for category, amount in category_totals %}'{{ category }}'{% if not loop.last %}, {% endif %}{% endfor %}],
+    datasets: [{
+        data: [{% for category, amount in category_totals %}{{ amount }}{% if not loop.last %}, {% endif %}{% endfor %}],
+        backgroundColor: [
+            '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF',
+            '#FF9F40', '#FF6384', '#C9CBCF', '#4BC0C0', '#FF6384',
+            '#36A2EB', '#FFCE56'
+        ],
+        borderWidth: 2,
+        borderColor: '#fff'
+    }]
+};
+
+new Chart(categoryCtx, {
+    type: 'doughnut',
+    data: categoryData,
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                position: 'bottom',
+                labels: {
+                    padding: 20,
+                    usePointStyle: true
+                }
+            }
+        }
+    }
+});
+</script>
+{% endblock %} 

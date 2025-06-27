@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Budget Tracker Pro - Web Application</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body { background-color: #f8f9fa; }
+        .card { border-radius: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        .income { color: #27ae60; }
+        .expense { color: #e74c3c; }
+        .navbar-brand { font-weight: bold; }
+        .btn-primary { background: linear-gradient(135deg, #2c3e50, #3498db); border: none; }
+        .btn-success { background: linear-gradient(135deg, #27ae60, #2ecc71); border: none; }
+        .btn-danger { background: linear-gradient(135deg, #e74c3c, #c0392b); border: none; }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark" style="background: linear-gradient(135deg, #2c3e50, #3498db);">
+        <div class="container">
+            <a class="navbar-brand" href="/">
+                <i class="fas fa-wallet me-2"></i>Budget Tracker Pro
+            </a>
+            <div class="navbar-nav ms-auto">
+                <a class="nav-link" href="/"><i class="fas fa-home me-1"></i>Dashboard</a>
+                <a class="nav-link" href="/transactions"><i class="fas fa-list me-1"></i>Transactions</a>
+                <a class="nav-link" href="/add_transaction"><i class="fas fa-plus me-1"></i>Add Transaction</a>
+                <a class="nav-link" href="/reports"><i class="fas fa-chart-bar me-1"></i>Reports</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div class="container mt-3">
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+
+    <!-- Main Content -->
+    <div class="container mt-4">
+        <!-- Page Header -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <h1 class="display-4 text-primary">
+                    <i class="fas fa-chart-line me-3"></i>Financial Dashboard
+                </h1>
+                <p class="lead text-muted">Track your income, expenses, and financial goals</p>
+            </div>
+        </div>
+
+        <!-- Summary Cards -->
+        <div class="row mb-4">
+            <div class="col-lg-3 col-md-6 mb-3">
+                <div class="card bg-success text-white">
+                    <div class="card-body text-center">
+                        <h6 class="card-title">Total Income</h6>
+                        <h3 class="mb-0">{{ format_currency(total_income) }}</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 mb-3">
+                <div class="card bg-danger text-white">
+                    <div class="card-body text-center">
+                        <h6 class="card-title">Total Expenses</h6>
+                        <h3 class="mb-0">{{ format_currency(total_expenses) }}</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 mb-3">
+                <div class="card bg-primary text-white">
+                    <div class="card-body text-center">
+                        <h6 class="card-title">Net Balance</h6>
+                        <h3 class="mb-0">{{ format_currency(balance) }}</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 mb-3">
+                <div class="card bg-info text-white">
+                    <div class="card-body text-center">
+                        <h6 class="card-title">This Month</h6>
+                        <h3 class="mb-0">{{ format_currency(monthly_summary.balance) }}</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts Row -->
+        <div class="row mb-4">
+            <div class="col-lg-8 mb-3">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="fas fa-chart-pie me-2"></i>Expenses by Category</h5>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="categoryChart" width="400" height="200"></canvas>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4 mb-3">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="fas fa-chart-bar me-2"></i>Monthly Overview</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row text-center">
+                            <div class="col-6">
+                                <h4 class="text-success">{{ format_currency(monthly_summary.income) }}</h4>
+                                <small class="text-muted">Income</small>
+                            </div>
+                            <div class="col-6">
+                                <h4 class="text-danger">{{ format_currency(monthly_summary.expenses) }}</h4>
+                                <small class="text-muted">Expenses</small>
+                            </div>
+                        </div>
+                        <hr>
+                        <div class="text-center">
+                            <h5 class="text-primary">{{ format_currency(monthly_summary.balance) }}</h5>
+                            <small class="text-muted">Net Balance</small>
+                        </div>
+                        <hr>
+                        <div class="text-center">
+                            <h6>{{ monthly_summary.transaction_count }}</h6>
+                            <small class="text-muted">Transactions</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Transactions -->
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0"><i class="fas fa-clock me-2"></i>Recent Transactions</h5>
+                        <a href="/transactions" class="btn btn-sm btn-primary">
+                            <i class="fas fa-list me-1"></i>View All
+                        </a>
+                    </div>
+                    <div class="card-body">
+                        {% if recent_transactions %}
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Date</th>
+                                            <th>Name</th>
+                                            <th>Category</th>
+                                            <th>Type</th>
+                                            <th>Amount</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for transaction in recent_transactions %}
+                                        <tr>
+                                            <td>{{ transaction.date.strftime('%Y-%m-%d') }}</td>
+                                            <td>
+                                                <strong>{{ transaction.name }}</strong>
+                                                {% if transaction.description %}
+                                                    <br><small class="text-muted">{{ transaction.description }}</small>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                <span class="badge bg-secondary">{{ transaction.category.value }}</span>
+                                            </td>
+                                            <td>
+                                                <span class="{{ transaction.transaction_type.value }}">
+                                                    <i class="fas fa-{{ 'arrow-up' if transaction.transaction_type.value == 'income' else 'arrow-down' }} me-1"></i>
+                                                    {{ transaction.transaction_type.value.title() }}
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <strong class="{{ transaction.transaction_type.value }}">
+                                                    {{ format_currency(transaction.amount) }}
+                                                </strong>
+                                            </td>
+                                            <td>
+                                                <form method="POST" action="/delete_transaction/{{ transaction.id }}" 
+                                                      style="display: inline;" 
+                                                      onsubmit="return confirm('Are you sure you want to delete this transaction?')">
+                                                    <button type="submit" class="btn btn-sm btn-outline-danger">
+                                                        <i class="fas fa-trash"></i>
+                                                    </button>
+                                                </form>
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        {% else %}
+                            <div class="text-center py-4">
+                                <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                                <h5 class="text-muted">No transactions yet</h5>
+                                <p class="text-muted">Start by adding your first transaction!</p>
+                                <a href="/add_transaction" class="btn btn-primary">
+                                    <i class="fas fa-plus me-1"></i>Add Transaction
+                                </a>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Category Chart
+        const categoryCtx = document.getElementById('categoryChart').getContext('2d');
+        const categoryData = {
+            labels: [{% for category, amount in category_totals %}'{{ category }}'{% if not loop.last %}, {% endif %}{% endfor %}],
+            datasets: [{
+                data: [{% for category, amount in category_totals %}{{ amount }}{% if not loop.last %}, {% endif %}{% endfor %}],
+                backgroundColor: [
+                    '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF',
+                    '#FF9F40', '#FF6384', '#C9CBCF', '#4BC0C0', '#FF6384',
+                    '#36A2EB', '#FFCE56'
+                ],
+                borderWidth: 2,
+                borderColor: '#fff'
+            }]
+        };
+
+        new Chart(categoryCtx, {
+            type: 'doughnut',
+            data: categoryData,
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            padding: 20,
+                            usePointStyle: true
+                        }
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html> 

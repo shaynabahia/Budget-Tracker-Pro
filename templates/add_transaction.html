@@ -1,0 +1,201 @@
+{% extends "base.html" %}
+
+{% block title %}Add Transaction - Budget Tracker Pro{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<div class="row mb-4">
+    <div class="col-12">
+        <h1 class="display-4 fw-bold text-primary">
+            <i class="fas fa-plus me-3"></i>Add New Transaction
+        </h1>
+        <p class="lead text-muted">Record your income or expense</p>
+    </div>
+</div>
+
+<!-- Add Transaction Form -->
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-edit me-2"></i>Transaction Details</h5>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('add_transaction') }}">
+                    <!-- Transaction Type -->
+                    <div class="row mb-3">
+                        <div class="col-12">
+                            <label class="form-label">Transaction Type <span class="text-danger">*</span></label>
+                            <div class="d-flex gap-3">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="transaction_type" 
+                                           id="type_expense" value="expense" checked>
+                                    <label class="form-check-label" for="type_expense">
+                                        <i class="fas fa-arrow-down text-danger me-1"></i>Expense
+                                    </label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="transaction_type" 
+                                           id="type_income" value="income">
+                                    <label class="form-check-label" for="type_income">
+                                        <i class="fas fa-arrow-up text-success me-1"></i>Income
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Name and Amount -->
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="name" class="form-label">Transaction Name <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="name" name="name" 
+                                   placeholder="e.g., Grocery Shopping" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="amount" class="form-label">Amount <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <span class="input-group-text">$</span>
+                                <input type="number" class="form-control" id="amount" name="amount" 
+                                       placeholder="0.00" step="0.01" min="0.01" required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Category -->
+                    <div class="row mb-3">
+                        <div class="col-12">
+                            <label for="category" class="form-label">Category <span class="text-danger">*</span></label>
+                            <select class="form-select" id="category" name="category" required>
+                                <option value="">Select a category...</option>
+                                <optgroup label="Expense Categories">
+                                    {% for category in categories %}
+                                        {% if category.value in ['Food & Dining', 'Transportation', 'Housing', 'Utilities', 'Entertainment', 'Shopping', 'Healthcare', 'Education', 'Travel', 'Insurance', 'Taxes', 'Other Expense'] %}
+                                            <option value="{{ category.value }}">{{ category.value }}</option>
+                                        {% endif %}
+                                    {% endfor %}
+                                </optgroup>
+                                <optgroup label="Income Categories">
+                                    {% for category in categories %}
+                                        {% if category.value in ['Salary', 'Freelance', 'Investment', 'Business', 'Other Income'] %}
+                                            <option value="{{ category.value }}">{{ category.value }}</option>
+                                        {% endif %}
+                                    {% endfor %}
+                                </optgroup>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Description -->
+                    <div class="row mb-3">
+                        <div class="col-12">
+                            <label for="description" class="form-label">Description</label>
+                            <textarea class="form-control" id="description" name="description" rows="3" 
+                                      placeholder="Optional description of the transaction..."></textarea>
+                        </div>
+                    </div>
+
+                    <!-- Tags -->
+                    <div class="row mb-3">
+                        <div class="col-12">
+                            <label for="tags" class="form-label">Tags</label>
+                            <input type="text" class="form-control" id="tags" name="tags" 
+                                   placeholder="e.g., groceries, weekly, essential (comma-separated)">
+                            <div class="form-text">Add tags to help organize your transactions (optional)</div>
+                        </div>
+                    </div>
+
+                    <!-- Submit Buttons -->
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="d-flex gap-2">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-save me-1"></i>Save Transaction
+                                </button>
+                                <a href="{{ url_for('transactions') }}" class="btn btn-outline-secondary">
+                                    <i class="fas fa-times me-1"></i>Cancel
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Quick Add Examples -->
+        <div class="card mt-4">
+            <div class="card-header">
+                <h6 class="mb-0"><i class="fas fa-lightbulb me-2"></i>Quick Add Examples</h6>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6 class="text-success">Common Income</h6>
+                        <ul class="list-unstyled">
+                            <li><i class="fas fa-check text-success me-2"></i>Salary payment</li>
+                            <li><i class="fas fa-check text-success me-2"></i>Freelance work</li>
+                            <li><i class="fas fa-check text-success me-2"></i>Investment returns</li>
+                            <li><i class="fas fa-check text-success me-2"></i>Business income</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <h6 class="text-danger">Common Expenses</h6>
+                        <ul class="list-unstyled">
+                            <li><i class="fas fa-check text-danger me-2"></i>Grocery shopping</li>
+                            <li><i class="fas fa-check text-danger me-2"></i>Gas/fuel</li>
+                            <li><i class="fas fa-check text-danger me-2"></i>Utility bills</li>
+                            <li><i class="fas fa-check text-danger me-2"></i>Entertainment</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Dynamic category filtering based on transaction type
+document.addEventListener('DOMContentLoaded', function() {
+    const typeInputs = document.querySelectorAll('input[name="transaction_type"]');
+    const categorySelect = document.getElementById('category');
+    
+    function updateCategories() {
+        const selectedType = document.querySelector('input[name="transaction_type"]:checked').value;
+        const options = categorySelect.querySelectorAll('option');
+        
+        options.forEach(option => {
+            if (option.value === '') return; // Skip placeholder
+            
+            const isExpenseCategory = ['Food & Dining', 'Transportation', 'Housing', 'Utilities', 
+                                     'Entertainment', 'Shopping', 'Healthcare', 'Education', 
+                                     'Travel', 'Insurance', 'Taxes', 'Other Expense'].includes(option.value);
+            const isIncomeCategory = ['Salary', 'Freelance', 'Investment', 'Business', 'Other Income'].includes(option.value);
+            
+            if (selectedType === 'expense' && isExpenseCategory) {
+                option.style.display = '';
+            } else if (selectedType === 'income' && isIncomeCategory) {
+                option.style.display = '';
+            } else {
+                option.style.display = 'none';
+            }
+        });
+        
+        // Reset category selection if current selection is not valid for new type
+        const currentValue = categorySelect.value;
+        const currentOption = categorySelect.querySelector(`option[value="${currentValue}"]`);
+        if (currentOption && currentOption.style.display === 'none') {
+            categorySelect.value = '';
+        }
+    }
+    
+    typeInputs.forEach(input => {
+        input.addEventListener('change', updateCategories);
+    });
+    
+    // Initial update
+    updateCategories();
+});
+</script>
+{% endblock %} 
